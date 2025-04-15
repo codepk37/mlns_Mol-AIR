@@ -1,0 +1,18 @@
+Similarity-LIR:
+  Agent:
+    type: RND
+    n_steps: 64
+    epoch: 6
+    seq_len: 35
+    seq_mini_batch_size: 16
+    gamma: 1.0
+    nonepi_adv_coef: 0.1
+  Env:
+    similarity_coef: 1.0
+    init_selfies: '[C]'
+  Train:
+    num_envs: 64
+    seed: 0
+    total_time_steps: 120000
+    summary_freq: 1000
+    device: cuda

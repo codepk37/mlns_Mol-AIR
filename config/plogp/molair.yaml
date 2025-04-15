@@ -1,0 +1,65 @@
+# Example modification for config/plogp/molair.yaml
+# Apply similar changes to other config/<env_name>/molair.yaml files
+
+PLogP-MolAIR: # Experiment ID
+  Agent:
+    type: SAC # Specify SAC agent type
+    # --- SAC Specific Hyperparameters ---
+    gamma: 0.99 # Discount factor
+    tau: 0.005 # Target network update rate (Polyak averaging)
+    alpha: 0.2 # Initial entropy coefficient (can be learned)
+    actor_lr: 3.0e-4 # Learning rate for actor
+    critic_lr: 3.0e-4 # Learning rate for critic
+    alpha_lr: 3.0e-4 # Learning rate for alpha (if learned)
+    target_update_interval: 1 # Steps between target network updates
+    learn_alpha: True # Whether to automatically tune alpha
+    target_entropy_ratio: 0.98 # Target entropy ratio (relative to max entropy)
+    # --- Buffer & Training Hyperparameters ---
+    buffer_size: 100000 # Size of the replay buffer
+    batch_size: 256 # Batch size for sampling from buffer
+    learning_starts: 1000 # Number of steps before starting training
+    gradient_steps: 1 # Number of gradient steps per environment step
+    # --- Recurrent Specific (if needed, adjust based on network) ---
+    # seq_len: 35 # May not be directly applicable like in PPO, SAC learns from individual transitions
+    # --- Common Agent Params ---
+    n_steps: 64 # Steps per environment interaction before potentially updating (less critical for off-policy SAC)
+
+  Env:
+    plogp_coef: 1.0
+    # init_selfies: '[C]' # Keep or modify as needed
+
+  Train:
+    num_envs: 64
+    seed: 0
+    total_time_steps: 120000
+    summary_freq: 1000
+    agent_save_freq: 5000 # Frequency to save agent checkpoints
+    num_inference_envs: 32 # Number of environments for periodic inference/evaluation
+    n_inference_episodes: 100 # Number of episodes for periodic inference/evaluation
+    lr: 1.0e-4 # Default LR (can be overridden by specific actor/critic/alpha LRs)
+    grad_clip_max_norm: 5.0 # Gradient clipping norm
+    # pretrained_path: data/drd2+qed+sa/pretrained.pt # Optional: Path to pretrained model
+    # refset_path: data/drd2+qed+sa/smiles.txt # Optional: Path to reference set for novelty calculation
+    device: cuda # Device to run on (e.g., 'cuda' or 'cpu')
+
+  CountIntReward: # Keep if using intrinsic rewards with SAC
+    crwd_coef: 0.01
+
+  # Inference section (if running inference directly)
+  # Inference:
+  #   num_envs: 64
+  #   n_episodes: 10000
+  #   seed: 0
+  #   device: cuda
+  #   ckpt: best # Which checkpoint to load ('best', 'final', or step number)
+  #   temperature: 1.0 # Sampling temperature for inference
+
+# --- Notes ---
+# - Adjust hyperparameters (gamma, tau, alpha, learning rates, buffer_size, batch_size, etc.) based on SAC best practices and empirical results.
+# - The concept of 'n_steps', 'epoch', 'seq_len', 'seq_mini_batch_size' from PPO might map differently or be less relevant to off-policy SAC.
+#   - 'n_steps' might just control how often `agent.update` is called relative to environment steps.
+#   - 'batch_size' now refers to sampling from the replay buffer.
+#   - 'gradient_steps' controls how many optimization steps happen per environment interaction.
+# - Ensure the 'type' is set to 'SAC'.
+# - Add SAC-specific parameters under the 'Agent' section.
+# - Keep 'Env', 'Train', and 'CountIntReward' sections as needed, adjusting parameters like 'total_time_steps'.
