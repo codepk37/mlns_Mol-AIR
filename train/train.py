@@ -14,6 +14,8 @@ from drl.util import IncrementalMean
 from envs import Env
 from util import CSVSyncWriter, TextInfoBox, logger, to_smiles, try_create_dir
 import os
+from tqdm import tqdm
+
 
 class Train:
     _TRACE_ENV: int = 0
