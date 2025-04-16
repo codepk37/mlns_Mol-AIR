@@ -6,22 +6,24 @@ QED-MolAIR: # Experiment ID
     gamma: 0.99 # Discount factor
     tau: 0.005 # Target network update rate (Polyak averaging)
     alpha: 0.2 # Initial entropy coefficient (can be learned)
-    actor_lr: 3.0e-4 # Learning rate for actor
-    critic_lr: 3.0e-4 # Learning rate for critic
-    alpha_lr: 3.0e-4 # Learning rate for alpha (if learned)
+    actor_lr: 0.001 # Learning rate for actor
+    critic_lr: 0.001 # Learning rate for critic
+    alpha_lr: 0.001 # Learning rate for alpha (if learned)
     target_update_interval: 1 # Steps between target network updates
     learn_alpha: True # Whether to automatically tune alpha
-    target_entropy_ratio: 0.98 # Target entropy ratio (relative to max entropy)
+    target_entropy_ratio: 0.5 # Target entropy ratio (relative to max entropy)
     # --- Buffer & Training Hyperparameters ---
-    buffer_size: 100000 # Size of the replay buffer
-    batch_size: 256 # Batch size for sampling from buffer
+    buffer_size: 200000 # Size of the replay buffer
+    batch_size: 512 # Batch size for sampling from buffer
     learning_starts: 1000 # Number of steps before starting training
-    gradient_steps: 1 # Number of gradient steps per environment step
+    gradient_steps: 4 # Number of gradient steps per environment step
     # --- Common Agent Params (May have different meaning/usage in SAC) ---
     n_steps: 1 # Number of environment steps per agent interaction cycle (often 1 for SAC)
 
   Env: # Kept from original qed/molair.yaml
     qed_coef: 1.0
+    use_raw_reward: True
+    raw_reward_invalid_penalty: -1.0  
 
   Train: # Kept from original qed/molair.yaml (adjust lr if needed)
     num_envs: 64
