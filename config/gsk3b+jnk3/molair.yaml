@@ -2,41 +2,39 @@
 GSK3B+JNK3-MolAIR: # Experiment ID
   Agent:
     type: SAC # Specify SAC agent type
-    # --- SAC Specific Hyperparameters ---
+    # --- SAC Specific Hyperparameters (Suggested Starting Points) ---
     gamma: 0.99 # Discount factor
-    tau: 0.005 # Target network update rate (Polyak averaging)
-    alpha: 0.2 # Initial entropy coefficient (can be learned)
+    tau: 0.005 # Target network update rate
+    alpha: 0.2 # Initial entropy coefficient (will be tuned if learn_alpha=True)
     actor_lr: 3.0e-4 # Learning rate for actor
     critic_lr: 3.0e-4 # Learning rate for critic
-    alpha_lr: 3.0e-4 # Learning rate for alpha (if learned)
+    alpha_lr: 3.0e-4 # Learning rate for alpha
     target_update_interval: 1 # Steps between target network updates
-    learn_alpha: True # Whether to automatically tune alpha
-    target_entropy_ratio: 0.98 # Target entropy ratio (relative to max entropy)
+    learn_alpha: True # Automatically tune alpha
+    target_entropy_ratio: 0.98 # Target higher entropy (encourage exploration)
     # --- Buffer & Training Hyperparameters ---
-    buffer_size: 100000 # Size of the replay buffer
-    batch_size: 256 # Batch size for sampling from buffer
-    learning_starts: 1000 # Number of steps before starting training
-    gradient_steps: 1 # Number of gradient steps per environment step
-    # --- Common Agent Params (May have different meaning/usage in SAC) ---
-    n_steps: 1 # Number of environment steps per agent interaction cycle (often 1 for SAC)
+    buffer_size: 200000 # Replay buffer size
+    batch_size: 512    # Batch size for sampling from buffer
+    learning_starts: 10000 # Increase steps before learning starts
+    gradient_steps: 1    # Start with 1 gradient step per env step
+    # --- Common Agent Params ---
+    n_steps: 1 # SAC typically uses n_steps=1
 
-  Env: # Kept from original gsk3b+jnk3/molair.yaml
-    gsk3b_coef: 0.5 # Coefficients sum to 1
+  Env: # Keep task-specific settings
+    gsk3b_coef: 0.5
     jnk3_coef: 0.5
     init_selfies: ['[C][C][C]', '[C][=C][C]', '[C][C][=N]', '[C][N][C]', '[C][O][C]']
 
-  Train: # Kept from original gsk3b+jnk3/molair.yaml (adjust lr if needed)
+  Train:
     num_envs: 64
     seed: 0
-    total_time_steps: 120000
+    total_time_steps: 120000 # Keep original or increase if needed
     summary_freq: 1000
-    agent_save_freq: 5000
+    agent_save_freq: 10000 # Increase save frequency slightly
     num_inference_envs: 32
     n_inference_episodes: 100
-    # lr: 1.0e-4
     grad_clip_max_norm: 5.0
     device: cuda
 
-  CountIntReward: # Kept from original gsk3b+jnk3/molair.yaml
-    crwd_coef: 0.001 # Value from original GSK3B+JNK3 HIR config
-
+  CountIntReward: # Keep original intrinsic reward setting if used
+    crwd_coef: 0.002 # Value from original combined PPO/RND config

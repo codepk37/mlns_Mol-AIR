@@ -284,8 +284,44 @@ class ChemEnv(Env):
         
         # pLogP
         if self._config.plogp_coef > 0.0:
-            self._current_prop.plogp = score_f.calculate_pLogP(self._current_smiles)
-            score += self._config.plogp_coef * (max(self._current_prop.plogp, -10) / 10)
+            # --- Previous Modification ---
+            # penalized_logp = score_f.calculate_pLogP(self._current_smiles)
+            # self._current_prop.plogp = penalized_logp
+            # reward_component = max(penalized_logp, -10.0)
+            # score += self._config.plogp_coef * reward_component
+            # --- End Previous Modification ---
+
+            # --- NEW Simplification START ---
+            # Calculate raw logP only if the molecule is valid
+            raw_logp = -10.0 # Assign a large penalty if molecule is invalid initially
+            if self._current_mol is not None:
+                 try:
+                     # Use RDKit's raw LogP calculation
+                     from rdkit.Chem import Descriptors
+                     raw_logp = Descriptors.MolLogP(self._current_mol)
+                 except Exception as e:
+                     # Handle rare calculation errors on valid-ish molecules
+                     # logger.print(f"Warning: RDKit LogP calculation failed for {self._current_smiles}: {e}")
+                     raw_logp = -10.0 # Penalize calculation errors
+
+            # Store the original penalized logP for logging purposes if desired
+            # It's calculated here but not used directly in the reward signal below
+            try:
+                 penalized_logp_for_logging = score_f.calculate_pLogP(self._current_smiles) if self._current_mol else -10.0
+            except Exception:
+                 penalized_logp_for_logging = -10.0
+            self._current_prop.plogp = penalized_logp_for_logging
+
+            # --- Define the reward component based *only* on raw LogP ---
+            # Scale raw logP to be in a reasonable range (e.g., similar magnitude to other rewards like QED)
+            # We clip to prevent extreme values. Adjust the scaling factor (e.g., / 5.0) and clipping range if needed.
+            # Aim for a signal that can become positive. Raw logP for typical molecules is often -2 to 6.
+            reward_component = max(raw_logp / 5.0, -2.0) # Scale by 5, clip at -2
+
+            # Add this simplified reward component to the total score
+            # The plogp_coef (from YAML, likely 1.0) scales this component's contribution
+            score += self._config.plogp_coef * reward_component
+            # --- NEW Simplification END ---
             
         # QED
         if self._config.qed_coef > 0.0:
